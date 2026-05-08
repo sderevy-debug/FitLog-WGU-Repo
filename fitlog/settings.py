@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qa2ojx0=y15*568b#ja_)6&g5tfzz&#5i+o93*q0_6yuc&sr_-'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -78,8 +79,12 @@ WSGI_APPLICATION = 'fitlog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fitlog_db',
+        'USER': 'svjat',
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': 'localhost',  # or your server's IP
+        'PORT': '5432',       # default PostgreSQL port
     }
 }
 
@@ -124,4 +129,4 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-#AUTH_USER_MODEL = 'fitnesswebapp.CustomUser'
+AUTH_USER_MODEL = 'database.CustomUser'
