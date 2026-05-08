@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Django Site{% endblock %}</title>
+
+    <!-- Link to your global CSS file -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Block for page-specific CSS -->
+    {% block page_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <!-- Standard navbar items go here -->
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'calendar' %}">Calendar</a>
+            <a href="{% url 'workouts' %}">Workouts</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'account' %}">Account</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- This is where child templates will inject their content -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {% now "Y" %} My Django Site</p>
+    </footer>
+
+    <!-- Block for page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
