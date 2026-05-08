@@ -1,0 +1,4 @@
+.env
+.idea
+database/migrations
+.venv
