@@ -23,12 +23,12 @@
       <div class="cal-day {% if day.is_today %}cal-day--today{% endif %} {% if day.all_complete %}cal-day--complete{% endif %}">
         <span class="cal-day__num">{{ day.number }}</span>
         {% for dw in day.day_workouts %}
-          <form method="post" action="{% url 'toggle_complete' dw.id %}">
+          <form method="post" action="{% url 'toggle_workout_complete' dw.id %}">
             {% csrf_token %}
-            <label class="cal-check {% if dw.completed %}cal-check--done{% endif %}">
+            <label class="cal-check {% if dw.workout_completed %}cal-check--done{% endif %}">
               <input type="checkbox"
                      name="completed"
-                     {% if dw.completed %}checked{% endif %}
+                     {% if dw.workout_completed %}checked{% endif %}
                      onchange="this.form.submit()" />
               <span title="{{ dw.workout.name }}">{{ dw.workout.name }}</span>
             </label>

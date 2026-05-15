@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
-from database.models import DayWorkout
+from database.models import DayWorkout, WorkoutPlan
 
 
 # Pages
@@ -28,6 +28,7 @@ def calendar_page(request):
     next_year = year if month < 12 else year + 1
 
     day_workouts = DayWorkout.objects.filter(
+        user=request.user,
         date__year=year,
         date__month=month
     ).select_related('workout')
@@ -47,7 +48,7 @@ def calendar_page(request):
                     'blank': False,
                     'number': day_num,
                     'is_today': day_num == today.day and month == today.month and year == today.year,
-                    'all_complete': bool(day_dws) and all(dw.completed for dw in day_dws),
+                    'all_complete': bool(day_dws) and all(dw.workout_completed for dw in day_dws),
                     'day_workouts': day_dws,
                 })
 
@@ -66,7 +67,7 @@ def account(request):
     context = {}
     return render(request,'account.html',context)
 def workouts(request):
-    context = {}
+    context = {'workout_plans': WorkoutPlan.objects.filter(user=request.user)}
     return render(request,'workouts.html',context)
 def login(request):
     context = {}
@@ -95,3 +96,22 @@ def account_delete(request):
         return HttpResponse('Deleted')
     else:
         return HttpResponseRedirect('/')
+
+# Database
+def plan_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        num_per_week = request.POST.get('num_per_week', 0)
+        WorkoutPlan.objects.create(user=request.user, name=name, description=description, days_per_week=num_per_week)
+        return HttpResponseRedirect('/workouts')
+    return HttpResponseRedirect('/workouts')
+
+def toggle_workout_complete(request,day_workout_id):
+    if request.method == 'POST':
+        day_workout = DayWorkout.objects.get(pk=day_workout_id)
+        day_workout.workout_completed = not day_workout.workout_completed
+        day_workout.save()
+        return HttpResponseRedirect('/calendar')
+    else:
+        pass

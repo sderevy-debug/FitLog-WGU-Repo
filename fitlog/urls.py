@@ -31,4 +31,8 @@ urlpatterns = [
     path('account_logout', views.account_logout, name='account_logout'),
     path('account_update',views.account_update,name='account_update'),
     path('account_delete',views.account_delete,name='account_delete'),
+
+    path('plan_create',views.plan_create,name='plan_create'),
+
+    path('toggle_workout_complete/<int:day_workout_id>/',views.toggle_workout_complete,name='toggle_workout_complete'),
 ]

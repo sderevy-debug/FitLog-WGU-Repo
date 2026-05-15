@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Workouts — FitLog{% endblock %}
 
@@ -9,6 +10,13 @@
   <div>
     <h1 class="page-header__title">Workouts</h1>
     <p class="page-header__sub">Your workout plans and exercises</p>
+  </div>
+
+  <div>
+    <div class="flex gap-1">
+    <button class="btn btn--ghost">Import</button>
+    <button class="btn btn--primary" onclick="openCreate()">Create Plan</button>
+    </div>
   </div>
 </div>
 
@@ -67,4 +75,35 @@
   </div>
   {% endfor %}
 </div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalTitle">Create Plan</h2>
+      <button class="modal__close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <form method="post" action="{% url 'plan_create' %}" id="modalForm">
+        {% csrf_token %}
+        <input type="hidden" name="plan_id" id="modalPlanId" />
+        <div class="form-group">
+          <label for="planName">Plan Name</label>
+          <input type="text" id="planName" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="planDesc">Description</label>
+          <textarea id="planDesc" name="description" rows="3"></textarea>
+        </div>
+        <div class="flex gap-1" style="justify-content:flex-end;">
+          <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="modalSubmit" data-url="{% url 'plan_create' %}">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'javascript/edit_workouts.js' %}"></script>
 {% endblock %}
