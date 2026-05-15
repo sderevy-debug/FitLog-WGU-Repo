@@ -1,7 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Calendar Page{% endblock %}
+{% block title %}Calendar — FitLog{% endblock %}
+
+{% block extra_head %}{% endblock %}
 
 {% block content %}
-    <h1>Calendar Page</h1>
+<div class="cal-nav">
+  <h1 class="cal-nav__month">{{ month_name }} <em class="text-accent">{{ year }}</em></h1>
+  <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn--ghost">&larr; Prev</a>
+  <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn--ghost">Next &rarr;</a>
+</div>
+
+<div class="cal-grid">
+  {% for label in day_labels %}
+    <div class="cal-day-label">{{ label }}</div>
+  {% endfor %}
+
+  {% for day in calendar_days %}
+    {% if day.blank %}
+      <div class="cal-day cal-day--empty"></div>
+    {% else %}
+      <div class="cal-day {% if day.is_today %}cal-day--today{% endif %} {% if day.all_complete %}cal-day--complete{% endif %}">
+        <span class="cal-day__num">{{ day.number }}</span>
+        {% for dw in day.day_workouts %}
+          <form method="post" action="{% url 'toggle_complete' dw.id %}">
+            {% csrf_token %}
+            <label class="cal-check {% if dw.completed %}cal-check--done{% endif %}">
+              <input type="checkbox"
+                     name="completed"
+                     {% if dw.completed %}checked{% endif %}
+                     onchange="this.form.submit()" />
+              <span title="{{ dw.workout.name }}">{{ dw.workout.name }}</span>
+            </label>
+          </form>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
 {% endblock %}

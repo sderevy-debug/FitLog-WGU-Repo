@@ -24,5 +24,11 @@ urlpatterns = [
     path('about', views.about, name='about'),
     path('workouts', views.workouts, name='workouts'),
     path('account', views.account, name='account'),
-    path('calendar', views.calendar, name='calendar'),
+    path('calendar', views.calendar_page, name='calendar'),
+    path('login', views.login,name='login'),
+
+    path('account_register', views.account_register, name='account_register'),
+    path('account_logout', views.account_logout, name='account_logout'),
+    path('account_update',views.account_update,name='account_update'),
+    path('account_delete',views.account_delete,name='account_delete'),
 ]

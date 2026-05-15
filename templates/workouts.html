@@ -1,7 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Workout Page{% endblock %}
+{% block title %}Workouts — FitLog{% endblock %}
+
+{% block extra_head %}{% endblock %}
 
 {% block content %}
-    <h1>Workouts Page</h1>
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Workouts</h1>
+    <p class="page-header__sub">Your workout plans and exercises</p>
+  </div>
+</div>
+
+<div class="plan-list">
+  {% for plan in workout_plans %}
+  <details class="plan-card">
+    <summary class="plan-header" style="list-style:none;">
+      <div>
+        <div class="plan-header__name">{{ plan.name }}</div>
+        <div class="plan-header__meta">{{ plan.workouts.count }} workout{{ plan.workouts.count|pluralize }}</div>
+      </div>
+      <span class="plan-toggle">&#9660;</span>
+    </summary>
+
+    <div class="plan-body">
+      {% for workout in plan.workouts.all %}
+      <div class="workout-block">
+        <div class="workout-block__header">
+          <span class="workout-block__name">{{ workout.name }}</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Exercise</th>
+                <th>Sets</th>
+                <th>Reps</th>
+                <th>Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for exercise in workout.exercises.all %}
+              <tr>
+                <td>{{ exercise.name }}</td>
+                <td>{{ exercise.sets }}</td>
+                <td>{{ exercise.reps }}</td>
+                <td>{{ exercise.weight|default:"—" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted" style="padding:1rem 0.9rem;">No exercises added.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted" style="font-size:0.85rem;">No workouts in this plan.</p>
+      {% endfor %}
+    </div>
+  </details>
+  {% empty %}
+  <div class="card text-muted" style="text-align:center; padding:3rem;">
+    No workout plans created yet.
+  </div>
+  {% endfor %}
+</div>
 {% endblock %}

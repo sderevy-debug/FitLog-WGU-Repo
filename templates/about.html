@@ -1,7 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}About Page{% endblock %}
+{% block title %}About — FitLog{% endblock %}
+
+{% block extra_head %}{% endblock %}
 
 {% block content %}
-    <h1>About Page</h1>
+<div class="about-hero">
+  <h1 class="about-hero__title">Train with<br><em>intention.</em></h1>
+  <p class="about-hero__body">
+    FitLog is a simple, no-noise workout tracker built for people who take their training seriously.
+    Plan your weeks, log your sessions, and watch your consistency compound over time.
+  </p>
+</div>
+
+<hr />
+
+<div class="about-features">
+  <div class="about-feature">
+    <div class="about-feature__icon">📋</div>
+    <div class="about-feature__title">Plan</div>
+    <p class="about-feature__body">Build workout plans with structured exercises, sets, and reps. Assign them to days in your calendar.</p>
+  </div>
+  <div class="about-feature">
+    <div class="about-feature__icon">✅</div>
+    <div class="about-feature__title">Log</div>
+    <p class="about-feature__body">Check off each workout as you complete it. Your calendar fills in — no manual entry needed.</p>
+  </div>
+  <div class="about-feature">
+    <div class="about-feature__icon">🔥</div>
+    <div class="about-feature__title">Streak</div>
+    <p class="about-feature__body">Stay consistent and build your streak. The best motivation is a record worth protecting.</p>
+  </div>
+</div>
 {% endblock %}

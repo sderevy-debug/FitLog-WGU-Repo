@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — FitLog{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Dashboard</h1>
+    <p class="page-header__sub">Welcome back, <strong>{{ user.get_short_name|default:user.username }}</strong></p>
+  </div>
+</div>
+
+<div class="grid-4 mb-2">
+  <div class="card stat">
+    <span class="stat__label">Current Streak</span>
+    <span class="stat__value">{{ streak }}<span class="stat__unit">days</span></span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">This Week</span>
+    <span class="stat__value">{{ workouts_this_week }}<span class="stat__unit">sessions</span></span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">Total Logged</span>
+    <span class="stat__value">{{ total_workouts }}</span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">Active Plan</span>
+    <span class="stat__value" style="font-size:1.4rem;">{{ active_plan.name|default:"—" }}</span>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 320px; gap: 1.25rem;">
+
+  <div class="card">
+    <h2 class="font-display mb-2" style="font-size:1rem;">Recent Activity</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Workout</th>
+            <th>Plan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in recent_activity %}
+          <tr>
+            <td class="text-muted">{{ entry.date }}</td>
+            <td>{{ entry.workout.name }}</td>
+            <td class="text-muted">{{ entry.workout_plan.name }}</td>
+            <td>
+              {% if entry.completed %}
+                <span class="badge badge--success">Done</span>
+              {% else %}
+                <span class="badge">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-muted" style="padding:1.5rem 0.9rem;">No activity logged yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+    <h2 class="font-display" style="font-size:1rem;">Today's Workouts</h2>
+    {% for day_workout in todays_workouts %}
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+      <span style="font-size:0.9rem;">{{ day_workout.workout.name }}</span>
+      {% if day_workout.completed %}
+        <span class="badge badge--success">Done</span>
+      {% else %}
+        <span class="badge">Pending</span>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-muted" style="font-size:0.85rem;">No workouts scheduled today.</p>
+    {% endfor %}
+
+    <hr />
+    <a href="{% url 'calendar' %}" class="btn btn--primary" style="text-align:center; display:block;">Open Calendar</a>
+  </div>
+
+</div>
+{% endblock %}
