@@ -23,6 +23,7 @@ class Exercise(models.Model):
     movement_type = models.CharField(max_length=100, blank=True, null=True)
     weight = models.IntegerField()
     rest_time = models.TimeField()
+    sets = models.IntegerField()
     superset = models.BooleanField()
     description = models.TextField(default='No description')
     intensity_levels = {

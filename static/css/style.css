@@ -15,6 +15,12 @@
   --shadow: 0 8px 32px rgba(0,0,0,.55);
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
@@ -483,6 +489,29 @@ footer {
   color: var(--muted);
   transition: transform .2s;
 }
+.exercise-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  width: 100%;
+  outline: none;
+  transition: border-color .2s;
+}
+.exercise-input:focus { border-color: var(--accent); }
+
+.row-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 0.25rem;
+}
+.row-delete:hover { color: var(--accent-2); }
 details[open] .plan-toggle { transform: rotate(180deg); }
 .plan-body {
   border-top: 1px solid var(--border);

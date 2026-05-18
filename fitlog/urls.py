@@ -33,6 +33,13 @@ urlpatterns = [
     path('account_delete',views.account_delete,name='account_delete'),
 
     path('plan_create',views.plan_create,name='plan_create'),
+    path('plan/<int:plan_id>/delete/', views.plan_delete,  name='plan_delete'),
+
+    path('workout_create',views.workout_create, name='workout_create'),
+    path('workout_edit/<int:workout_id>/',     views.workout_edit,      name='workout_edit'),
+    path('workout_delete/<int:workout_id>/', views.workout_delete, name='workout_delete'),
+    path('workout_exercises/<int:workout_id>/', views.workout_exercises, name='workout_exercises'),
 
     path('toggle_workout_complete/<int:day_workout_id>/',views.toggle_workout_complete,name='toggle_workout_complete'),
+
 ]

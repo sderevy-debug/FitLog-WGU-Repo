@@ -2,10 +2,12 @@ import calendar
 from datetime import date
 
 from django.contrib import auth
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render, get_object_or_404
+from psycopg.types import none
 
-from database.models import DayWorkout, WorkoutPlan
+from database.models import DayWorkout, WorkoutPlan, Exercise, Workout
 
 
 # Pages
@@ -78,40 +80,147 @@ def account_logout(request):
     if request.method == 'POST':
         auth.logout(request)
         return render(request, 'login.html')
+    return HttpResponseRedirect('/')
 
-    else:
-        return HttpResponseRedirect('/')
 def account_register(request):
     if request.method == 'POST':
-        return HttpResponse('Registered')
-    else:
+        User = get_user_model()
+        username = request.POST.get('username')|none
+        password = request.POST.get('password')
+        user = User.objects.create_user(username=username, password=password)
+        auth.login(request, user)
         return HttpResponseRedirect('/')
+    return HttpResponseRedirect('/')
 def account_update(request):
     if request.method == 'POST':
-        return HttpResponse('Updated')
-    else:
-        return HttpResponseRedirect('/')
+        action = request.POST.get('action')
+        user = request.user
+
+        if action == 'profile':
+            user.first_name = request.POST.get('first_name', '')
+            user.last_name  = request.POST.get('last_name', '')
+            user.email      = request.POST.get('email', '')
+            user.save(update_fields=['first_name', 'last_name', 'email'])
+
+        elif action == 'password':
+            current  = request.POST.get('current_password')
+            new      = request.POST.get('new_password')
+            confirm  = request.POST.get('confirm_password')
+            if user.check_password(current) and new == confirm:
+                user.set_password(new)
+                user.save(update_fields=['password'])
+                auth.login(request, user)
+
+        elif action == 'preferences':
+            user.units = request.POST.get('units', 'kg')
+            user.save(update_fields=['units'])
+
+        return HttpResponseRedirect('/account')
+    return HttpResponseRedirect('/')
 def account_delete(request):
     if request.method == 'POST':
-        return HttpResponse('Deleted')
-    else:
-        return HttpResponseRedirect('/')
+        user = request.user
+        auth.logout(request)
+        user.delete()
+        return HttpResponseRedirect('/login')
+    return HttpResponseRedirect('/')
+
+def login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = auth.authenticate(request, username=username, password=password)
+        if user:
+            auth.login(request, user)
+            return HttpResponseRedirect('/')
+        return render(request, 'login.html', {'form': {'errors': True}})
+    return render(request, 'login.html', {})
 
 # Database
 def plan_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        description = request.POST.get('description', '')
-        num_per_week = request.POST.get('num_per_week', 0)
-        WorkoutPlan.objects.create(user=request.user, name=name, description=description, days_per_week=num_per_week)
+        days_per_week_in = request.POST.get('days')
+        description = request.POST.get('desc', '')
+        WorkoutPlan.objects.create(user=request.user, name=name, description=description, days_per_week=days_per_week_in)
         return HttpResponseRedirect('/workouts')
     return HttpResponseRedirect('/workouts')
 
+def plan_delete(request, plan_id):
+    plan = get_object_or_404(WorkoutPlan, id=plan_id, user=request.user)
+    if request.method == 'POST':
+        plan.delete()
+    return HttpResponseRedirect('/workouts')
+
+def workout_create(request):
+    if request.method == 'POST':
+        plan = get_object_or_404(WorkoutPlan, id=request.POST.get('plan_id'), user=request.user)
+
+        workout = Workout.objects.create(
+            plan=plan,
+            name=request.POST.get('workout_name'),
+            goal=request.POST.get('goal', '')
+        )
+
+        update_exercises(request, workout)
+
+        return HttpResponseRedirect('/workouts')
+    return HttpResponseRedirect('/workouts')
+
+def workout_exercises(request, workout_id):
+    workout = get_object_or_404(Workout, id=workout_id, plan__user=request.user)
+    exercises = list(workout.exercises.values(
+        'id', 'name', 'weight', 'repetitions','sets', 'rest_time', 'intensity'
+    ))
+    return JsonResponse(exercises, safe=False)
+
+def workout_edit(request, workout_id):
+    workout = get_object_or_404(Workout, id=workout_id, plan__user=request.user)
+    if request.method == 'POST':
+        workout.name = request.POST.get('workout_name')
+        workout.goal = request.POST.get('goal', '')
+        workout.save(update_fields=['name', 'goal'])
+
+        workout.exercises.all().delete()
+
+        update_exercises(request, workout)
+
+        return HttpResponseRedirect('/workouts')
+    return HttpResponseRedirect('/workouts')
+
+def workout_delete(request, workout_id):
+    workout = get_object_or_404(Workout, id=workout_id, plan__user=request.user)
+    if request.method == 'POST':
+        workout.delete()
+        return HttpResponseRedirect('/workouts')
+    return HttpResponseRedirect('/workouts')
+
+def update_exercises(request,workout):
+    names = request.POST.getlist('exercise_name[]')
+    weights = request.POST.getlist('exercise_weight[]')
+    reps = request.POST.getlist('exercise_reps[]')
+    sets = request.POST.getlist('exercise_sets[]')
+    rest = request.POST.getlist('exercise_rest[]')
+    intensities = request.POST.getlist('exercise_intensity[]')
+
+    for i, name in enumerate(names):
+        if not name.strip():
+            continue
+        Exercise.objects.create(
+            workout=workout,
+            name=name.strip(),
+            weight=weights[i] or 0,
+            repetitions=reps[i] or None,
+            sets=sets[i] or None,
+            rest_time=rest[i] or '00:00:00',
+            intensity=intensities[i],
+            superset=False,
+        )
+
 def toggle_workout_complete(request,day_workout_id):
     if request.method == 'POST':
-        day_workout = DayWorkout.objects.get(pk=day_workout_id)
+        day_workout = DayWorkout.objects.get(pk=day_workout_id, user=request.user)
         day_workout.workout_completed = not day_workout.workout_completed
         day_workout.save()
         return HttpResponseRedirect('/calendar')
-    else:
-        pass
+    return HttpResponseRedirect('/')
