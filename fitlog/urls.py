@@ -29,7 +29,7 @@ urlpatterns = [
     path('account', views.account, name='account'),
     path('calendar', views.calendar_page, name='calendar'),
     path('login', views.login,name='login'),
-    path('', RedirectView.as_view(url='/login/'), name='home-redirect'),
+    path('', RedirectView.as_view(url='login'), name='home-redirect'),
     path('signup', views.account_register, name='account_register'),
 
     path('account_register', views.account_register, name='account_register'),
