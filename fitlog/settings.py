@@ -94,7 +94,7 @@ DEFAULT_FROM_EMAIL = config('EMAIL_USER')
 EMAIL_HOST_USER = config('EMAIL_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 LOGIN_URL = '/login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

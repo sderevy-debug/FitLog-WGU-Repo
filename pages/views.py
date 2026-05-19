@@ -122,10 +122,6 @@ def workouts(request):
     context = {'workout_plans': WorkoutPlan.objects.filter(user=request.user)}
     return render(request,'workouts.html',context)
 
-def login(request):
-    context = {}
-    return render(request,'login.html',context)
-
 # Actions
 def account_logout(request):
     if request.method == 'POST':
@@ -148,7 +144,7 @@ def account_register(request):
 
         user = User.objects.create_user(username=username, email=email, password=password1)
         auth.login(request, user)
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/home')
 
     return render(request, 'signup.html', {})
 def account_update(request):
