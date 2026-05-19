@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pages import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +27,7 @@ urlpatterns = [
     path('account', views.account, name='account'),
     path('calendar', views.calendar_page, name='calendar'),
     path('login', views.login,name='login'),
+    path('signup', views.account_register, name='account_register'),
 
     path('account_register', views.account_register, name='account_register'),
     path('account_logout', views.account_logout, name='account_logout'),
@@ -44,6 +46,15 @@ urlpatterns = [
     path('calendar/day_workouts/',                  views.day_workouts_json, name='day_workouts_json'),
     path('calendar/remove_workout/<int:day_workout_id>/', views.remove_workout, name='remove_workout'),
 
+    path('workouts/plan/<int:plan_id>/export/', views.plan_export, name='plan_export'),
+    path('workouts/import/',                    views.plan_import, name='plan_import'),
+
     path('toggle_workout_complete/<int:day_workout_id>/',views.toggle_workout_complete,name='toggle_workout_complete'),
+
+    # Django built-in password reset urls
+    path('password_reset/',          auth_views.PasswordResetView.as_view(template_name='password_reset/password_reset.html'),          name='password_reset'),
+    path('password_reset/done/',     auth_views.PasswordResetDoneView.as_view(template_name='password_reset/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/',  auth_views.PasswordResetConfirmView.as_view(template_name='password_reset/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('reset/done/',              auth_views.PasswordResetCompleteView.as_view(template_name='password_reset/password_reset_complete.html'), name='password_reset_complete'),
 
 ]

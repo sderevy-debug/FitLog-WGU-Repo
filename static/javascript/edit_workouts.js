@@ -70,7 +70,7 @@ function addExerciseRow(ex = {}) {
     <td><input class="exercise-input" type="number" name="exercise_weight[]"     value="${ex.weight || ''}"    placeholder="kg" min="0" /></td>
     <td><input class="exercise-input" type="number" name="exercise_reps[]"       value="${ex.repetitions || ''}" placeholder="reps" min="0" /></td>
     <td><input class="exercise-input" type="number" name="exercise_sets[]"       value="${ex.sets || ''}" placeholder="3"/></td>
-    <td><input class="exercise-input" type="text"   name="exercise_rest[]"       value="${ex.rest_time || ''}" placeholder="00:01:30" /></td>
+    <td><input class="exercise-input" type="text" name="exercise_rest[]" value="${ex.rest_time || '0:00'}" placeholder="0:00" maxlength="5" style="width:70px;" /></td>
     <td>
       <select class="exercise-input" name="exercise_intensity[]">
         <option value="LO" ${ex.intensity === 'LO' ? 'selected' : ''}>Light</option>
@@ -98,6 +98,27 @@ function getCookie(name) {
     .map(c => c.trim())
     .find(c => c.startsWith(name + '='))
     ?.split('=')[1];
+}
+
+function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    fetch('/workouts/import/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: e.target.result,
+    }).then(r => r.json())
+      .then(data => {
+        if (data.success) location.reload();
+        else alert('Import failed: ' + data.error);
+      });
+  };
+  reader.readAsText(file);
 }
 
 function closeModal() {

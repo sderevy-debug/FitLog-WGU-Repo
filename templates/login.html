@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Log In - FitLog</title>
   {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body class="login-page">
   <div class="login-wrap">
@@ -32,6 +32,9 @@
         <button type="submit" class="btn btn--primary">Log In</button>
       </form>
 
+      <p class="form-footer" style="margin-top:0.75rem;">
+        <a href="{% url 'password_reset' %}">Forgot password?</a>
+      </p>
       <p class="form-footer">
         No account? <a href="{% url 'account_register' %}">Sign up</a>
       </p>

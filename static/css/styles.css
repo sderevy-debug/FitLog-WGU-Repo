@@ -239,7 +239,7 @@ main { animation: fadeUp .35s ease both; }
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: .1em;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
   color: var(--muted);
 }
 .stat__value {

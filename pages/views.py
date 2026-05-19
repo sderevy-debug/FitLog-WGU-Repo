@@ -1,8 +1,10 @@
 import calendar
+import json
 from datetime import date, timedelta
 
 from django.contrib import auth
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from psycopg.types import none
@@ -11,6 +13,7 @@ from database.models import DayWorkout, WorkoutPlan, Exercise, Workout
 
 
 # Pages
+@login_required(login_url='/login')
 def home(request):
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
@@ -48,9 +51,13 @@ def home(request):
         'todays_workouts':   todays_workouts,
     }
     return render(request, 'dashboard.html', context)
+
+@login_required(login_url='/login')
 def about(request):
     context = {}
     return render(request,'about.html',context)
+
+@login_required(login_url='/login')
 def calendar_page(request):
     today = date.today()
     month = int(request.GET.get('month', today.month))
@@ -104,12 +111,17 @@ def calendar_page(request):
         'workout_plans': WorkoutPlan.objects.filter(user=request.user).prefetch_related('workouts'),
     }
     return render(request,'calendar.html',context)
+
+@login_required(login_url='/login')
 def account(request):
     context = {}
     return render(request,'account.html',context)
+
+@login_required(login_url='/login')
 def workouts(request):
     context = {'workout_plans': WorkoutPlan.objects.filter(user=request.user)}
     return render(request,'workouts.html',context)
+
 def login(request):
     context = {}
     return render(request,'login.html',context)
@@ -124,12 +136,21 @@ def account_logout(request):
 def account_register(request):
     if request.method == 'POST':
         User = get_user_model()
-        username = request.POST.get('username')|none
-        password = request.POST.get('password')
-        user = User.objects.create_user(username=username, password=password)
+        username  = request.POST.get('username')
+        email     = request.POST.get('email', '')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if password1 != password2:
+            return render(request, 'signup.html', {'error': 'Passwords do not match.'})
+        if User.objects.filter(username=username).exists():
+            return render(request, 'signup.html', {'error': 'Username already taken.'})
+
+        user = User.objects.create_user(username=username, email=email, password=password1)
         auth.login(request, user)
         return HttpResponseRedirect('/')
-    return HttpResponseRedirect('/')
+
+    return render(request, 'signup.html', {})
 def account_update(request):
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -171,7 +192,7 @@ def login(request):
         user = auth.authenticate(request, username=username, password=password)
         if user:
             auth.login(request, user)
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/home')
         return render(request, 'login.html', {'form': {'errors': True}})
     return render(request, 'login.html', {})
 
@@ -251,7 +272,7 @@ def update_exercises(request,workout):
             weight=weights[i] or 0,
             repetitions=reps[i] or None,
             sets=sets[i] or None,
-            rest_time=rest[i] or '00:00:00',
+            rest_time=rest[i] or '1:00',
             intensity=intensities[i],
             superset=False,
         )
@@ -284,6 +305,70 @@ def remove_workout(request, day_workout_id):
     if request.method == 'POST':
         dw.delete()
     return HttpResponseRedirect('/calendar')
+
+def plan_export(request, plan_id):
+    plan = get_object_or_404(WorkoutPlan, id=plan_id, user=request.user)
+    data = {
+        'name':         plan.name,
+        'description':  plan.description,
+        'days_per_week': plan.days_per_week,
+        'workouts': []
+    }
+    for workout in plan.workouts.all():
+        workout_data = {
+            'name': workout.name,
+            'goal': workout.goal,
+            'exercises': []
+        }
+        for ex in workout.exercises.all():
+            workout_data['exercises'].append({
+                'name':        ex.name,
+                'weight':      ex.weight,
+                'repetitions': ex.repetitions,
+                'rest_time':   str(ex.rest_time),
+                'sets':        ex.sets,
+                'intensity':   ex.intensity,
+                'superset':    ex.superset,
+                'description': ex.description,
+            })
+        data['workouts'].append(workout_data)
+
+    response = JsonResponse(data)
+    response['Content-Disposition'] = f'attachment; filename="{plan.name}.json"'
+    return response
+
+def plan_import(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            plan = WorkoutPlan.objects.create(
+                user=request.user,
+                name=data['name'],
+                description=data.get('description', ''),
+                days_per_week=data.get('days_per_week', 1),
+            )
+            for workout_data in data.get('workouts', []):
+                workout = Workout.objects.create(
+                    plan=plan,
+                    name=workout_data['name'],
+                    goal=workout_data.get('goal', ''),
+                )
+                for ex in workout_data.get('exercises', []):
+                    Exercise.objects.create(
+                        workout=workout,
+                        name=ex['name'],
+                        weight=ex.get('weight', 0),
+                        repetitions=ex.get('repetitions'),
+                        rest_time=ex.get('rest_time', '00:00:00'),
+                        sets=ex.get('sets', 1),
+                        intensity=ex.get('intensity', 'ME'),
+                        superset=ex.get('superset', False),
+                        description=ex.get('description', ''),
+                    )
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid method'})
 
 def toggle_workout_complete(request,day_workout_id):
     if request.method == 'POST':

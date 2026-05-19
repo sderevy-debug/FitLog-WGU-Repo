@@ -25,7 +25,7 @@ class Exercise(models.Model):
     name = models.CharField(max_length=100)
     movement_type = models.CharField(max_length=100, blank=True, null=True)
     weight = models.IntegerField()
-    rest_time = models.TimeField()
+    rest_time = models.CharField(max_length=5, default='0:00')
     sets = models.IntegerField()
     superset = models.BooleanField()
     description = models.TextField(default='No description')

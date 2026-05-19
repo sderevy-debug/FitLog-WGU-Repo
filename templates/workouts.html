@@ -14,8 +14,9 @@
 
   <div>
     <div class="flex gap-1">
-    <button class="btn btn--ghost">Import</button>
-    <button class="btn btn--primary" onclick="openCreate()">Create Plan</button>
+     <label class="btn btn--ghost" for="importInput" style="cursor:pointer;">Import</label>
+     <input type="file" id="importInput" accept=".json" style="display:none;" onchange="handleImport(this)" />
+     <button class="btn btn--primary" onclick="openCreate()">Create Plan</button>
     </div>
   </div>
 </div>
@@ -29,6 +30,7 @@
         <div class="plan-header__meta">{{ plan.workouts.count }} workout{{ plan.workouts.count|pluralize }} - {{ plan.days_per_week }} day{{ plan.days_per_week|pluralize }}</div>
       </div>
         <div class="flex gap-1" style="align-items:center;">
+            <a href="{% url 'plan_export' plan.id %}" class="btn btn--ghost">Export</a>
         <form method="post" action="{% url 'plan_delete' plan.id %}">
           {% csrf_token %}
           <button type="submit" class="btn btn--danger"
@@ -62,7 +64,7 @@
                 <th>Exercise</th>
                 <th>Sets</th>
                 <th>Reps</th>
-                <th>Time</th>
+                <th>Rest Time</th>
                 <th>Weight</th>
               </tr>
             </thead>
@@ -72,7 +74,7 @@
                 <td>{{ exercise.name }}</td>
                 <td>{{ exercise.sets }}</td>
                 <td>{{ exercise.repetitions }}</td>
-                <td>{{ exercise.time }}</td>
+                <td>{{ exercise.rest_time }}</td>
                 <td>{{ exercise.weight|default:"—" }}</td>
               </tr>
               {% empty %}
