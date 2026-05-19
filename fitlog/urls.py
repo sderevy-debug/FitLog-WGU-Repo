@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import RedirectView
+
 from pages import views
 from django.contrib.auth import views as auth_views
 
@@ -27,6 +29,7 @@ urlpatterns = [
     path('account', views.account, name='account'),
     path('calendar', views.calendar_page, name='calendar'),
     path('login', views.login,name='login'),
+    path('', RedirectView.as_view(url='/login/'), name='home-redirect'),
     path('signup', views.account_register, name='account_register'),
 
     path('account_register', views.account_register, name='account_register'),
