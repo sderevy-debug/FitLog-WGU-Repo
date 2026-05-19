@@ -5,6 +5,9 @@ from django.db.models import Q
 class CustomUser(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    streak = models.IntegerField(default=0)
+    last_streak_update = models.DateField(null=True, blank=True)
+    units = models.CharField(max_length=3, default='kg', choices={'kg': 'Kilograms', 'lbs': 'Pounds'})
 
 class WorkoutPlan(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='workout_plans')

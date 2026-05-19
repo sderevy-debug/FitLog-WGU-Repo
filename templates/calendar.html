@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}Calendar — FitLog{% endblock %}
 
 {% block extra_head %}{% endblock %}
@@ -17,25 +19,78 @@
   {% endfor %}
 
   {% for day in calendar_days %}
-    {% if day.blank %}
-      <div class="cal-day cal-day--empty"></div>
-    {% else %}
-      <div class="cal-day {% if day.is_today %}cal-day--today{% endif %} {% if day.all_complete %}cal-day--complete{% endif %}">
+  {% if day.blank %}
+    <div class="cal-day cal-day--empty"></div>
+  {% else %}
+    <div class="cal-day {% if day.is_today %}cal-day--today{% endif %} {% if day.all_complete %}cal-day--complete{% endif %}">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <span class="cal-day__num">{{ day.number }}</span>
-        {% for dw in day.day_workouts %}
-          <form method="post" action="{% url 'toggle_workout_complete' dw.id %}">
-            {% csrf_token %}
-            <label class="cal-check {% if dw.workout_completed %}cal-check--done{% endif %}">
+        <button class="cal-day__assign"
+            data-date="{{ day.date|date:'Y-m-d' }}"
+            data-day-workouts="{{ day.day_workout_ids }}"
+            onclick="openAssignModal(this.dataset)">+</button>
+      </div>
+
+      {% for dw in day.day_workouts %}
+        <form method="post" action="{% url 'toggle_workout_complete' dw.id %}">
+          {% csrf_token %}
+          <label class="cal-check {% if dw.workout_completed %}cal-check--done{% endif %}">
+            {% if day.is_today %}
               <input type="checkbox"
                      name="completed"
                      {% if dw.workout_completed %}checked{% endif %}
                      onchange="this.form.submit()" />
-              <span title="{{ dw.workout.name }}">{{ dw.workout.name }}</span>
-            </label>
-          </form>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endfor %}
+            {% else %}
+              <input type="checkbox"
+                     {% if dw.workout_completed %}checked{% endif %}
+                     disabled />
+            {% endif %}
+            <span title="{{ dw.workout.name }}">{{ dw.workout.name }}</span>
+              </label>
+            </form>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
 </div>
+
+<div class="modal-backdrop" id="assignModalBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal__header">
+      <h2 class="modal__title" id="assignModalTitle">Assign Workout</h2>
+      <button class="modal__close" onclick="closeAssignModal()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <form method="post" action="{% url 'assign_workout' %}" id="assignForm">
+        {% csrf_token %}
+        <input type="hidden" name="date" id="assignDate" />
+
+        <div class="form-group">
+          <label>Workout</label>
+          <select name="workout_id" id="assignWorkoutSelect">
+            <option value="">— Select a workout —</option>
+            {% for plan in workout_plans %}
+              <optgroup label="{{ plan.name }}">
+                {% for workout in plan.workouts.all %}
+                  <option value="{{ workout.id }}">{{ workout.name }}</option>
+                {% endfor %}
+              </optgroup>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div id="assignedList" style="margin-bottom:1rem;"></div>
+
+        <div class="flex gap-1" style="justify-content:flex-end;">
+          <button type="button" class="btn btn--ghost" onclick="closeAssignModal()">Cancel</button>
+          <button type="submit" class="btn btn--primary">Assign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'javascript/edit_calendar.js' %}"></script>
 {% endblock %}

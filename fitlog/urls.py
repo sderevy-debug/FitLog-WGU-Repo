@@ -20,7 +20,7 @@ from pages import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
+    path('home', views.home, name='home'),
     path('about', views.about, name='about'),
     path('workouts', views.workouts, name='workouts'),
     path('account', views.account, name='account'),
@@ -39,6 +39,10 @@ urlpatterns = [
     path('workout_edit/<int:workout_id>/',     views.workout_edit,      name='workout_edit'),
     path('workout_delete/<int:workout_id>/', views.workout_delete, name='workout_delete'),
     path('workout_exercises/<int:workout_id>/', views.workout_exercises, name='workout_exercises'),
+
+    path('calendar/assign/',                        views.assign_workout,    name='assign_workout'),
+    path('calendar/day_workouts/',                  views.day_workouts_json, name='day_workouts_json'),
+    path('calendar/remove_workout/<int:day_workout_id>/', views.remove_workout, name='remove_workout'),
 
     path('toggle_workout_complete/<int:day_workout_id>/',views.toggle_workout_complete,name='toggle_workout_complete'),
 

@@ -1,5 +1,5 @@
 import calendar
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib import auth
 from django.contrib.auth import get_user_model
@@ -12,7 +12,41 @@ from database.models import DayWorkout, WorkoutPlan, Exercise, Workout
 
 # Pages
 def home(request):
-    context = {}
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+
+    workouts_this_week = DayWorkout.objects.filter(
+        user=request.user,
+        date__gte=week_start,
+        workout_completed=True
+    ).count()
+
+    total_workouts = DayWorkout.objects.filter(
+        user=request.user,
+        workout_completed=True
+    ).count()
+
+    active_plan = WorkoutPlan.objects.filter(
+        user=request.user
+    ).last()
+
+    recent_activity = DayWorkout.objects.filter(
+        user=request.user
+    ).select_related('workout', 'workout__plan').order_by('-date')[:10]
+
+    todays_workouts = DayWorkout.objects.filter(
+        user=request.user,
+        date=today
+    ).select_related('workout')
+
+    context = {
+        'streak':            request.user.streak,
+        'workouts_this_week': workouts_this_week,
+        'total_workouts':    total_workouts,
+        'active_plan':       active_plan,
+        'recent_activity':   recent_activity,
+        'todays_workouts':   todays_workouts,
+    }
     return render(request, 'dashboard.html', context)
 def about(request):
     context = {}
@@ -46,12 +80,16 @@ def calendar_page(request):
                 calendar_days.append({'blank': True})
             else:
                 day_dws = dw_by_day.get(day_num, [])
+                day_date = date(year, month, day_num)
                 calendar_days.append({
                     'blank': False,
                     'number': day_num,
-                    'is_today': day_num == today.day and month == today.month and year == today.year,
+                    'date': day_date,
+                    'is_today': day_date == today,
+                    'has_workouts': len(day_dws) > 0,
                     'all_complete': bool(day_dws) and all(dw.workout_completed for dw in day_dws),
                     'day_workouts': day_dws,
+                    'day_workout_ids': ','.join(str(dw.id) for dw in day_dws),
                 })
 
     context = {
@@ -63,6 +101,7 @@ def calendar_page(request):
         'next_year': next_year,
         'day_labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         'calendar_days': calendar_days,
+        'workout_plans': WorkoutPlan.objects.filter(user=request.user).prefetch_related('workouts'),
     }
     return render(request,'calendar.html',context)
 def account(request):
@@ -216,6 +255,35 @@ def update_exercises(request,workout):
             intensity=intensities[i],
             superset=False,
         )
+
+def assign_workout(request):
+    if request.method == 'POST':
+        workout_id = request.POST.get('workout_id')
+        date       = request.POST.get('date').format()
+        if workout_id and date:
+            workout = get_object_or_404(Workout, id=workout_id, plan__user=request.user)
+            DayWorkout.objects.get_or_create(
+                user=request.user,
+                workout=workout,
+                date=date,
+                defaults={'workout_completed': False}
+            )
+        return HttpResponseRedirect('/calendar')
+    return HttpResponseRedirect('/calendar')
+
+def day_workouts_json(request):
+    date = request.GET.get('date')
+    workouts = DayWorkout.objects.filter(
+        user=request.user, date=date
+    ).select_related('workout')
+    data = [{'id': dw.id, 'name': dw.workout.name} for dw in workouts]
+    return JsonResponse(data, safe=False)
+
+def remove_workout(request, day_workout_id):
+    dw = get_object_or_404(DayWorkout, id=day_workout_id, user=request.user)
+    if request.method == 'POST':
+        dw.delete()
+    return HttpResponseRedirect('/calendar')
 
 def toggle_workout_complete(request,day_workout_id):
     if request.method == 'POST':

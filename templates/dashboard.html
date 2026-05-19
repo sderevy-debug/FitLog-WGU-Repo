@@ -13,15 +13,15 @@
 <div class="grid-4 mb-2">
   <div class="card stat">
     <span class="stat__label">Current Streak</span>
-    <span class="stat__value">{{ streak }}<span class="stat__unit">days</span></span>
+    <span class="stat__value">{{ streak }}<span class="stat__unit">day{{ streak|pluralize }}</span></span>
   </div>
   <div class="card stat">
     <span class="stat__label">This Week</span>
-    <span class="stat__value">{{ workouts_this_week }}<span class="stat__unit">sessions</span></span>
+    <span class="stat__value">{{ workouts_this_week }}<span class="stat__unit">session{{ workouts_this_week|pluralize }}</span></span>
   </div>
   <div class="card stat">
     <span class="stat__label">Total Logged</span>
-    <span class="stat__value">{{ total_workouts }}</span>
+    <span class="stat__value">{{ total_workouts }}<span class="stat__unit">workout{{ total_workouts|pluralize }}</span></span>
   </div>
   <div class="card stat">
     <span class="stat__label">Active Plan</span>
@@ -48,9 +48,9 @@
           <tr>
             <td class="text-muted">{{ entry.date }}</td>
             <td>{{ entry.workout.name }}</td>
-            <td class="text-muted">{{ entry.workout_plan.name }}</td>
+            <td class="text-muted">{{ entry.workout.plan.name }}</td>
             <td>
-              {% if entry.completed %}
+              {% if entry.workout_completed %}
                 <span class="badge badge--success">Done</span>
               {% else %}
                 <span class="badge">Pending</span>
