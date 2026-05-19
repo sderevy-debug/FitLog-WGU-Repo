@@ -1,6 +1,6 @@
 import calendar
 import json
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from django.contrib import auth
 from django.contrib.auth import get_user_model
@@ -306,6 +306,7 @@ def plan_export(request, plan_id):
     plan = get_object_or_404(WorkoutPlan, id=plan_id, user=request.user)
     data = {
         'name':         plan.name,
+        'date-time':    datetime.now(),
         'description':  plan.description,
         'days_per_week': plan.days_per_week,
         'workouts': []
