@@ -368,7 +368,6 @@ def plan_import(request):
 def toggle_workout_complete(request,day_workout_id):
     if request.method == 'POST':
         day_workout = DayWorkout.objects.get(pk=day_workout_id, user=request.user)
-        day_workout.workout_completed = not day_workout.workout_completed
-        day_workout.save()
+        day_workout.flip_workout_completed()
         return HttpResponseRedirect('/calendar')
     return HttpResponseRedirect('/')

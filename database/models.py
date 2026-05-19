@@ -2,12 +2,17 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Q
 
+#Inheritance/Polymorphism
 class CustomUser(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     streak = models.IntegerField(default=0)
     last_streak_update = models.DateField(null=True, blank=True)
     units = models.CharField(max_length=3, default='kg', choices={'kg': 'Kilograms', 'lbs': 'Pounds'})
+
+    def get_username(self):
+        return "The username is " + self.username
+
 
 class WorkoutPlan(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='workout_plans')
@@ -48,9 +53,14 @@ class Exercise(models.Model):
             )
         ]
 
+# Encapsulation
 class DayWorkout(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='day_workouts')
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
     date = models.DateField()
-    workout_completed = models.BooleanField(default=False)
+    _workout_completed = models.BooleanField(default=False)
     notes = models.TextField(default='No notes')
+
+    def flip_workout_completed(self):
+        self._workout_completed = not self._workout_completed
+        self.save()
