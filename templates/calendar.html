@@ -8,7 +8,22 @@
 
 {% block content %}
 <div class="cal-nav">
-  <h1 class="cal-nav__month">{{ month_name }} <em class="text-accent">{{ year }}</em></h1>
+  <h1 class="cal-nav__month">
+  {{ month_name }}
+  <em class="text-accent" id="year-display"
+      onclick="startEditYear()"
+      style="cursor:pointer;"
+      title="Click to change year">{{ year }}</em>
+  <input type="number" id="year-input"
+         value="{{ year }}"
+         min="2000" max="2100"
+         style="display:none; width:6rem; font-size:1.6rem; font-style:italic;
+                background:transparent; border:none; border-bottom:1px solid currentColor;
+                color:inherit; text-align:center;"
+         class="exercise-input"
+         onblur="commitYear(this.value)"
+         onkeydown="if(event.key==='Enter') commitYear(this.value); if(event.key==='Escape') cancelEditYear();" />
+  </h1>
   <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn--ghost">&larr; Prev</a>
   <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn--ghost">Next &rarr;</a>
 </div>

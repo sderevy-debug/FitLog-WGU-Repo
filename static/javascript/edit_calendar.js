@@ -45,6 +45,31 @@ function removeAssignment(dayWorkoutId, date, btn) {
   });
 }
 
+function startEditYear() {
+  document.getElementById('year-display').style.display = 'none';
+  const input = document.getElementById('year-input');
+  input.style.display = 'inline-flex';
+  input.focus();
+  input.select();
+}
+
+function cancelEditYear() {
+  document.getElementById('year-input').style.display = 'none';
+  document.getElementById('year-display').style.display = 'inline';
+}
+
+function commitYear(value) {
+  const year = parseInt(value);
+  if (!year || year < 2000 || year > 2100) {
+    cancelEditYear();
+    return;
+  }
+  const params = new URLSearchParams(window.location.search);
+  params.set('year', year.toString());
+  params.set('month', params.get('month') || new Date().getMonth() + 1);
+  window.location.href = '?' + params.toString();
+}
+
 assignBackdrop.addEventListener('click', e => {
   if (e.target === assignBackdrop) closeAssignModal();
 });

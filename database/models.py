@@ -58,9 +58,12 @@ class DayWorkout(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='day_workouts')
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
     date = models.DateField()
-    _workout_completed = models.BooleanField(default=False)
+    workout_completed = models.BooleanField(default=False)
     notes = models.TextField(default='No notes')
 
     def flip_workout_completed(self):
-        self._workout_completed = not self._workout_completed
+        self.workout_completed = not self.workout_completed
         self.save()
+
+    def is_workout_completed(self):
+        return self.workout_completed

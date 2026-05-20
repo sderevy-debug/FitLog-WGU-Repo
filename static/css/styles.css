@@ -123,7 +123,6 @@ img, svg { display: block; max-width: 100%; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width:100%;
   gap: 0.4rem;
   font-family: var(--font-display);
   font-size: 0.9rem;
